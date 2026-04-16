@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcryptjs");
 
-// ================= LOGIN =================
+// LOGIN
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -14,7 +14,7 @@ router.post("/login", async (req, res) => {
     );
 
     if (users.length === 0) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
 
     const user = users[0];
@@ -22,18 +22,15 @@ router.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: "Wrong password" });
+      return res.status(401).json({ message: "Wrong password" });
     }
 
-    res.json({
-      message: "Login success",
-      user: { id: user.id, role: user.role }
-    });
+    res.json({ message: "Login successful" });
 
-  } catch (err) {
-    console.error("🔥 LOGIN ERROR:", err);
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error" });
   }
-}); // ✅ THIS WAS MISSING
+});
 
 module.exports = router;

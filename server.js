@@ -36,3 +36,41 @@ const PORT = process.env.PORT || 3000; // ✅ IMPORTANT FOR RENDER
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+const db = require("./db");
+
+// AUTO CREATE TABLE + USER
+(async () => {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        email VARCHAR(255),
+        password VARCHAR(255)
+      )
+    `);
+
+    console.log("✅ users table ready");
+
+    // insert test user (only if not exist)
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE email = ?",
+      ["admin@gmail.com"]
+    );
+
+    if (rows.length === 0) {
+      await db.query(`
+        INSERT INTO users (email, password)
+        VALUES (
+          'admin@gmail.com',
+          '$2a$10$8wYpR1l8Qz1l8k5rH6l1m.5zq5nCkZJrQ0YyYyYyYyYyYyYyYyYyY'
+        )
+      `);
+
+      console.log("✅ test user created");
+    }
+
+  } catch (err) {
+    console.error("❌ DB setup error:", err);
+  }
+})();
