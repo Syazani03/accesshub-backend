@@ -99,9 +99,9 @@ router.post("/", async (req, res) => {
     res.json({ message: "User created successfully" });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create user" });
-  }
+  console.error("🔥 USERS ERROR:", err);  // 👈 ADD THIS
+  res.status(500).json({ error: "Failed to fetch users" });
+}
 });
 
 
