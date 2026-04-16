@@ -1,5 +1,5 @@
 const express = require("express");
-const router = express.Router();   // ✅ REQUIRED
+const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcryptjs");
 
@@ -32,7 +32,8 @@ router.post("/login", async (req, res) => {
 
   } catch (err) {
     console.error("🔥 LOGIN ERROR:", err);
-    res.status(500).json({ error: err.message }); // 
-    }
+    res.status(500).json({ error: err.message });
+  }
+}); // ✅ THIS WAS MISSING
 
-module.exports = router;   
+module.exports = router;
