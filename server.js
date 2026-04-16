@@ -3,6 +3,10 @@ const cors = require("cors");
 
 const app = express();
 
+require("dotenv").config();
+
+const db = mysql.createConnection(process.env.MYSQL_URL);
+
 // ================= MIDDLEWARE =================
 app.use(cors());
 app.use(express.json());
@@ -40,3 +44,4 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
+

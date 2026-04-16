@@ -9,8 +9,10 @@ const SECRET = "secretkey"; // later move to .env
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-
+  const [users] = await db.query(
+  "SELECT * FROM users WHERE email = ?",
+  [email]
+  );
   if (users.length === 0) {
     return res.status(400).json({ message: "User not found" });
   }
