@@ -1,10 +1,16 @@
+const express = require("express");
+const router = express.Router();   // ✅ REQUIRED
+const db = require("../db");
+const bcrypt = require("bcryptjs");
+
+// ================= LOGIN =================
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const [users] = await db.query(
       "SELECT * FROM users WHERE email = ?",
-      [email]   // ✅ VERY IMPORTANT
+      [email]
     );
 
     if (users.length === 0) {
@@ -13,7 +19,6 @@ router.post("/login", async (req, res) => {
 
     const user = users[0];
 
-    const bcrypt = require("bcryptjs");
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -26,9 +31,8 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (err) {
-    console.error("🔥 LOGIN ERROR:", err);   // 👈 IMPORTANT
-    res.status(500).json({ message: "Server error" });
-  }
-});
+    console.error("🔥 LOGIN ERROR:", err);
+    res.status(500).json({ error: err.message }); // 
+    }
 
-module.exports = router;
+module.exports = router;   
