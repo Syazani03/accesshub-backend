@@ -3,9 +3,8 @@ const router = express.Router();
 const db = require("../db");
 const bcrypt = require("bcryptjs");
 
-
 // =====================================
-// ✅ GET ALL USERS + DEPARTMENTS (JOIN)
+// ✅ GET ALL USERS + DEPARTMENTS
 // =====================================
 router.get("/", async (req, res) => {
   try {
@@ -24,7 +23,6 @@ router.get("/", async (req, res) => {
       ORDER BY u.id
     `);
 
-    // 🔥 group departments per user
     const usersMap = {};
 
     rows.forEach(row => {
@@ -45,19 +43,17 @@ router.get("/", async (req, res) => {
       }
     });
 
-    const users = Object.values(usersMap);
-
-    res.json(users);
+    res.json(Object.values(usersMap));
 
   } catch (err) {
-    console.error(err);
+    console.error("🔥 USERS ERROR:", err);
     res.status(500).json({ error: "Failed to fetch users" });
   }
 });
 
 
 // =====================================
-// ✅ CREATE USER (WITH DEPARTMENTS)
+// ✅ CREATE USER
 // =====================================
 router.post("/", async (req, res) => {
   try {
@@ -67,7 +63,6 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "Email & password required" });
     }
 
-    // check duplicate
     const [existing] = await db.query(
       "SELECT id FROM users WHERE email = ?",
       [email]
@@ -86,53 +81,50 @@ router.post("/", async (req, res) => {
 
     const userId = result.insertId;
 
-    // insert departments
     if (departments && departments.length > 0) {
-      const values = departments.map(depId => [userId, depId]);
-
-      await db.query(
-        "INSERT INTO user_departments (user_id, department_id) VALUES ?",
-        [values]
-      );
+      for (const depId of departments) {
+        await db.query(
+          "INSERT INTO user_departments (user_id, department_id) VALUES (?, ?)",
+          [userId, depId]
+        );
+      }
     }
 
     res.json({ message: "User created successfully" });
 
   } catch (err) {
-  console.error("🔥 USERS ERROR:", err);  // 👈 ADD THIS
-  res.status(500).json({ error: "Failed to fetch users" });
-}
+    console.error("🔥 CREATE USER ERROR:", err);
+    res.status(500).json({ error: "Failed to create user" });
+  }
 });
 
 
 // =====================================
-// ✅ UPDATE USER (DEPARTMENTS ONLY)
+// ✅ UPDATE USER
 // =====================================
 router.put("/:id", async (req, res) => {
   try {
     const userId = req.params.id;
     const { departments } = req.body;
 
-    // remove old
     await db.query(
       "DELETE FROM user_departments WHERE user_id = ?",
       [userId]
     );
 
-    // insert new
     if (departments && departments.length > 0) {
-      const values = departments.map(depId => [userId, depId]);
-
-      await db.query(
-        "INSERT INTO user_departments (user_id, department_id) VALUES ?",
-        [values]
-      );
+      for (const depId of departments) {
+        await db.query(
+          "INSERT INTO user_departments (user_id, department_id) VALUES (?, ?)",
+          [userId, depId]
+        );
+      }
     }
 
     res.json({ message: "User updated successfully" });
 
   } catch (err) {
-    console.error(err);
+    console.error("🔥 UPDATE USER ERROR:", err);
     res.status(500).json({ error: "Failed to update user" });
   }
 });
@@ -158,14 +150,14 @@ router.delete("/:id", async (req, res) => {
     res.json({ message: "User deleted successfully" });
 
   } catch (err) {
-    console.error(err);
+    console.error("🔥 DELETE ERROR:", err);
     res.status(500).json({ error: "Failed to delete user" });
   }
 });
 
 
 // =====================================
-// ✅ GET SINGLE USER (OPTIONAL - FOR EDIT)
+// ✅ GET SINGLE USER
 // =====================================
 router.get("/:id", async (req, res) => {
   try {
@@ -205,8 +197,9 @@ router.get("/:id", async (req, res) => {
     res.json(user);
 
   } catch (err) {
-    console.error(err);
+    console.error("🔥 FETCH USER ERROR:", err);
     res.status(500).json({ error: "Failed to fetch user" });
   }
 });
+
 module.exports = router;
