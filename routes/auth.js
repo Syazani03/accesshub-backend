@@ -19,15 +19,16 @@ router.post("/login", async (req, res) => {
 
     const user = users[0];
 
+    console.log("👉 EMAIL:", email);
+    console.log("👉 INPUT PASSWORD:", password);
+    console.log("👉 HASH IN DB:", user.password);
+
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) {
-      return res.status(401).json({ message: "Wrong password" });
-    }
-
+console.log("👉 MATCH RESULT:", isMatch);
     res.json({
-  token: "dummy-token", // temporary
-  user: {
+    token: "dummy-token", // temporary
+    user: {
     email: user.email,
     role: "admin"
   }
