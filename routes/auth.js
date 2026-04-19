@@ -25,7 +25,13 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Wrong password" });
     }
 
-    res.json({ message: "Login successful" });
+    res.json({
+  token: "dummy-token", // temporary
+  user: {
+    email: user.email,
+    role: "admin"
+  }
+  });
 
   } catch (error) {
     console.error("Login error:", error);
