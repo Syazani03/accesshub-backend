@@ -2,6 +2,9 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 
+const db = require("./db");
+const bcrypt = require("bcryptjs");
+
 const app = express();
 
 // ================= MIDDLEWARE =================
@@ -30,39 +33,77 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-// ================= START SERVER =================
-const PORT = process.env.PORT || 3000; // ✅ IMPORTANT FOR RENDER
+// ================= START SERVER (after DB setup) =================
+const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
-
-const db = require("./db");
-const bcrypt = require("bcryptjs");
-
-// AUTO CREATE TABLE + USER
-(async () => {
+// 🔥 SETUP DATABASE ON START
+async function setupDatabase() {
   try {
-    const hash = await bcrypt.hash("123456", 10);
-
+    // USERS
     await db.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(255),
-        password VARCHAR(255)
+        password VARCHAR(255),
+        role VARCHAR(50)
       )
     `);
 
-    await db.query(`DELETE FROM users WHERE email = 'admin@gmail.com'`);
+    // DEPARTMENTS
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS departments (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255)
+      )
+    `);
 
-    await db.query(
-      `INSERT INTO users (email, password) VALUES (?, ?)`,
-      ["admin@gmail.com", hash]
+    // USER-DEPARTMENTS
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS user_departments (
+        user_id INT,
+        department_id INT
+      )
+    `);
+
+    // LINKS
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS links (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255),
+        url VARCHAR(255),
+        department_id INT
+      )
+    `);
+
+    console.log("✅ ALL TABLES READY");
+
+    // 🔥 CREATE DEFAULT ADMIN (if not exists)
+    const [existing] = await db.query(
+      "SELECT id FROM users WHERE email = ?",
+      ["admin@gmail.com"]
     );
 
-    console.log("✅ USER RESET SUCCESS: admin@gmail.com / 123456");
+    if (existing.length === 0) {
+      const hash = await bcrypt.hash("123456", 10);
+
+      await db.query(
+        "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
+        ["admin@gmail.com", hash, "admin"]
+      );
+
+      console.log("✅ Admin user created (admin@gmail.com / 123456)");
+    } else {
+      console.log("ℹ️ Admin user already exists");
+    }
 
   } catch (err) {
-    console.error("❌ ERROR:", err);
+    console.error("❌ DB SETUP ERROR:", err);
   }
-})();
+}
+
+// 🔥 START EVERYTHING
+setupDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
+});
