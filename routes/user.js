@@ -16,11 +16,8 @@ router.get("/", async (req, res) => {
         d.id AS department_id,
         d.name AS department_name
       FROM users u
-      LEFT JOIN user_departments ud 
-        ON u.id = ud.user_id
-      LEFT JOIN departments d 
-        ON d.id = ud.department_id
-      ORDER BY u.id
+      LEFT JOIN user_departments ud ON u.id = ud.user_id
+      LEFT JOIN departments d ON d.id = ud.department_id
     `);
 
     const usersMap = {};
@@ -51,7 +48,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-
 // =====================================
 // ✅ CREATE USER
 // =====================================
@@ -76,7 +72,7 @@ router.post("/", async (req, res) => {
 
     const [result] = await db.query(
       "INSERT INTO users (email, password, role) VALUES (?, ?, ?)",
-      [email, hashedPassword, role]
+      [email, hashedPassword, role || "user"]
     );
 
     const userId = result.insertId;
@@ -97,7 +93,6 @@ router.post("/", async (req, res) => {
     res.status(500).json({ error: "Failed to create user" });
   }
 });
-
 
 // =====================================
 // ✅ UPDATE USER
@@ -129,7 +124,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-
 // =====================================
 // ✅ DELETE USER
 // =====================================
@@ -155,7 +149,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-
 // =====================================
 // ✅ GET SINGLE USER
 // =====================================
@@ -171,10 +164,8 @@ router.get("/:id", async (req, res) => {
         d.id AS department_id,
         d.name AS department_name
       FROM users u
-      LEFT JOIN user_departments ud 
-        ON u.id = ud.user_id
-      LEFT JOIN departments d 
-        ON d.id = ud.department_id
+      LEFT JOIN user_departments ud ON u.id = ud.user_id
+      LEFT JOIN departments d ON d.id = ud.department_id
       WHERE u.id = ?
     `, [userId]);
 
