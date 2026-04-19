@@ -43,6 +43,8 @@ const bcrypt = require("bcryptjs");
 // AUTO CREATE TABLE + USER
 (async () => {
   try {
+    const hash = await bcrypt.hash("123456", 10);
+
     await db.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,27 +53,16 @@ const bcrypt = require("bcryptjs");
       )
     `);
 
-    console.log("✅ users table ready");
+    await db.query(`DELETE FROM users WHERE email = 'admin@gmail.com'`);
 
-    // insert test user (only if not exist)
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE email = ?",
-      ["admin@gmail.com"]
+    await db.query(
+      `INSERT INTO users (email, password) VALUES (?, ?)`,
+      ["admin@gmail.com", hash]
     );
 
-    if (rows.length === 0) {
-      await db.query(`
-        INSERT INTO users (email, password)
-        VALUES (
-          'admin@gmail.com',
-          '$2a$10$8wYpR1l8Qz1l8k5rH6l1m.5zq5nCkZJrQ0YyYyYyYyYyYyYyYyYyY'
-        )
-      `);
-
-      console.log("✅ test user created");
-    }
+    console.log("✅ USER RESET SUCCESS: admin@gmail.com / 123456");
 
   } catch (err) {
-    console.error("❌ DB setup error:", err);
+    console.error("❌ ERROR:", err);
   }
 })();
