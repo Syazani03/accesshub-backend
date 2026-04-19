@@ -39,7 +39,8 @@ router.get("/", async (req, res) => {
         l.department_id,
         d.name AS department_name
       FROM links l
-      LEFT JOIN departments d ON l.department_id = d.id
+      LEFT JOIN departments d 
+      ON l.department_id = d.id
     `);
 
     res.json(rows);
@@ -49,7 +50,6 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch links" });
   }
 });
-
 // =====================================
 // ✅ UPDATE LINK
 // =====================================
