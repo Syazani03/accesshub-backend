@@ -38,6 +38,7 @@ app.listen(PORT, () => {
 });
 
 const db = require("./db");
+const bcrypt = require("bcryptjs");
 
 // AUTO CREATE TABLE + USER
 (async () => {
